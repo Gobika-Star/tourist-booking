@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tourist Booking Information</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Slide-in from top animation */
+    .slide-in-top {
+      transform: translateY(-50px); /* Start above */
+      opacity: 0;
+      animation: slideInTop 1s forwards;
+    }
+
+    @keyframes slideInTop {
+      to {
+        transform: translateY(0); /* Slide into normal position */
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-tr from-yellow-100 via-pink-100 to-blue-200 min-h-screen flex flex-col items-center p-6">
+
+  <!-- Centered Bus Image at the Top with slide-in animation -->
+  <div class="w-full flex justify-center mb-8">
+    <img src="file:///C:/Users/Gobika/Downloads/vecteezy_bus-in-the-street_27298520.jpg" alt="Bus on the street" class="w-full max-w-2xl rounded-3xl shadow-2xl slide-in-top">
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-lg w-full space-y-6">
+    <h1 class="text-4xl font-bold text-center text-pink-600">Tourist Booking Form</h1>
+    
+    <form class="space-y-6">
+
+      <!-- User Name -->
+      <div>
+        <label class="block mb-2 text-gray-800 font-semibold">Your Name</label>
+        <input type="text" name="username" placeholder="Enter Your Name" required class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-4 focus:ring-pink-300">
+      </div>
+
+      <!-- Starting Destination (Source) -->
+      <div>
+        <label class="block mb-2 text-gray-800 font-semibold">Starting Destination</label>
+        <input type="text" name="starting_destination" placeholder="Enter Starting Location" required class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-4 focus:ring-pink-300">
+      </div>
+
+      <!-- Destination Name -->
+      <div>
+        <label class="block mb-2 text-gray-800 font-semibold">Destination Name</label>
+        <input type="text" name="destination_name" placeholder="Enter Destination" required class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-4 focus:ring-pink-300">
+      </div>
+
+      <!-- Travel Date -->
+      <div>
+        <label class="block mb-2 text-gray-800 font-semibold">Travel Date</label>
+        <input type="date" name="travel_date" required class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-4 focus:ring-pink-300">
+      </div>
+
+      <!-- Travel Time (AM/PM) -->
+      <div>
+        <label class="block mb-2 text-gray-800 font-semibold">Travel Time (AM/PM)</label>
+        <input type="time" name="travel_time" step="60" required class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-4 focus:ring-pink-300">
+      </div>
+
+      <!-- Return Date -->
+      <div>
+        <label class="block mb-2 text-gray-800 font-semibold">Return Date</label>
+        <input type="date" name="return_date" required class="w-full p-4 rounded-xl border-2 border-yellow-400 focus:outline-none focus:ring-4 focus:ring-pink-300">
+      </div>
