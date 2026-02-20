@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ attraction.name }} - Tourist QR Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'attractions' %}">Attractions</a></li>
+                <li class="breadcrumb-item active">{{ attraction.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Attraction Image -->
+        <div class="card mb-4">
+            {% if attraction.image %}
+            <img src="{{ attraction.image.url }}" class="card-img-top" alt="{{ attraction.name }}" 
+                 style="height: 400px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="fas fa-image fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Attraction Information -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>About This Attraction
+                </h4>
+            </div>
+            <div class="card-body">
+                <h2 class="text-primary mb-3">{{ attraction.name }}</h2>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ attraction.location }}
+                        </p>
+                        <p class="mb-3">
+                            <span class="badge bg-secondary fs-6">{{ attraction.get_category_display }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="h3 text-primary mb-0">${{ attraction.price_per_person }}</div>
+                        <small class="text-muted">per person</small>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5>Description</h5>
+                    <p class="text-muted">{{ attraction.description }}</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Operating Hours</h6>
+                        <p class="mb-3">
+                            <i class="fas fa-clock me-2 text-primary"></i>
+                            {{ attraction.opening_time|time:"g:i A" }} - {{ attraction.closing_time|time:"g:i A" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Capacity</h6>
+                        <p class="mb-3">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            Up to {{ attraction.max_capacity_per_slot }} visitors per time slot
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features and Amenities -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>Features & Amenities
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Professional guided tours available
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Wheelchair accessible
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Free parking available
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Gift shop on-site
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Restroom facilities
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Photography allowed
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section (Placeholder) -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>Visitor Reviews
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-4">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">Reviews Coming Soon</h6>
+                    <p class="text-muted">Visitor reviews and ratings will be displayed here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Sidebar -->
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>Book Your Visit
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="h2 text-primary mb-0">${{ attraction.price_per_person }}</div>
+                    <small class="text-muted">per person</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select Date</label>
+                    <input type="date" class="form-control" id="bookingDate" min="{{ today|date:'Y-m-d' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select Time</label>
+                    <select class="form-select" id="bookingTime">
+                        <option value="">Choose time...</option>
+                        <!-- Time slots will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Number of Visitors</label>
+                    <select class="form-select" id="visitorCount">
+                        {% for i in "123456789"|make_list %}
+                        <option value="{{ forloop.counter }}">{{ forloop.counter }} visitor{{ forloop.counter|pluralize }}</option>
+                        {% endfor %}
+                        <option value="10">10+ visitors</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">${{ attraction.price_per_person }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Service fee:</span>
+                        <span id="serviceFee">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between h5">
+                        <strong>Total:</strong>
+                        <strong id="totalAmount" class="text-primary">${{ attraction.price_per_person }}</strong>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="d-grid">
+                    <a href="{% url 'book_attraction' attraction.pk %}" class="btn btn-success btn-lg" id="bookNowBtn">
+                        <i class="fas fa-credit-card me-2"></i>Book Now
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Book
+                    </a>
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-muted">
+                        Don't have an account? <a href="{% url 'register' %}">Register here</a>
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Important Information -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>Important Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <small>Arrive 15 minutes before your scheduled time</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-id-card text-info me-2"></i>
+                        <small>Valid ID required for entry</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-mobile-alt text-success me-2"></i>
+                        <small>QR code will be sent to your email</small>
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-undo text-danger me-2"></i>
+                        <small>Free cancellation up to 24 hours before</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-phone me-2"></i>Contact Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="fas fa-phone me-2"></i>
+                    <small>1-800-TOURIST</small>
+                </p>
+                <p class="mb-2">
+                    <i class="fas fa-envelope me-2"></i>
+                    <small>info@touristbooking.com</small>
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-globe me-2"></i>
+                    <small>www.touristbooking.com</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pricePerPerson = {{ attraction.price_per_person }};
+    const openingTime = '{{ attraction.opening_time|time:"H:i" }}';
+    const closingTime = '{{ attraction.closing_time|time:"H:i" }}';
+    
+    // Generate time slots
+    generateTimeSlots();
+    
+    // Update pricing when visitor count changes
+    document.getElementById('visitorCount').addEventListener('change', updatePricing);
+    
+    function generateTimeSlots() {
+        const timeSelect = document.getElementById('bookingTime');
+        const opening = new Date(`2000-01-01 ${openingTime}`);
+        const closing = new Date(`2000-01-01 ${closingTime}`);
+        
+        // Generate slots every hour
+        for (let time = new Date(opening); time < closing; time.setHours(time.getHours() + 1)) {
+            const option = document.createElement('option');
+            const timeString = time.toTimeString().slice(0, 5);
+            const displayTime = time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            option.value = timeString;
+            option.textContent = displayTime;
+            timeSelect.appendChild(option);
+        }
+    }
+    
+    function updatePricing() {
+        const visitors = parseInt(document.getElementById('visitorCount').value) || 1;
+        const subtotal = pricePerPerson * visitors;
+        const serviceFee = subtotal * 0.05; // 5% service fee
+        const total = subtotal + serviceFee;
+        
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('serviceFee').textContent = `$${serviceFee.toFixed(2)}`;
+        document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+    }
+    
+    // Update booking URL with selected parameters
+    function updateBookingURL() {
+        const date = document.getElementById('bookingDate').value;
+        const time = document.getElementById('bookingTime').value;
+        const visitors = document.getElementById('visitorCount').value;
+        
+        const bookBtn = document.getElementById('bookNowBtn');
+        if (bookBtn) {
+            let url = bookBtn.href.split('?')[0]; // Remove existing parameters
+            if (date || time || visitors) {
+                const params = new URLSearchParams();
+                if (date) params.append('date', date);
+                if (time) params.append('time', time);
+                if (visitors) params.append('visitors', visitors);
+                url += '?' + params.toString();
+            }
+            bookBtn.href = url;
+        }
+    }
+    
+    // Add event listeners to update URL
+    document.getElementById('bookingDate').addEventListener('change', updateBookingURL);
+    document.getElementById('bookingTime').addEventListener('change', updateBookingURL);
+    document.getElementById('visitorCount').addEventListener('change', updateBookingURL);
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('bookingDate').setAttribute('min', today);
+    
+    // Initial pricing calculation
+    updatePricing();
+});
+</script>
+{% endblock %}
