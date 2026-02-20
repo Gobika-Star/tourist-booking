@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Details - Tourist QR Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'my_bookings' %}">My Bookings</a></li>
+                <li class="breadcrumb-item active">Booking Details</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Booking Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>Booking Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-primary">{{ booking.attraction.name }}</h5>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ booking.attraction.location }}
+                        </p>
+                        <p class="mb-3">{{ booking.attraction.description|truncatewords:30 }}</p>
+                        
+                        <div class="mb-2">
+                            <strong>Booking ID:</strong> 
+                            <code>{{ booking.booking_id }}</code>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Status:</strong> 
+                            <span class="badge status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Booked on:</strong> {{ booking.created_at|date:"M d, Y \a\t g:i A" }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Visit Information</h6>
+                                <div class="mb-2">
+                                    <i class="fas fa-calendar me-2 text-primary"></i>
+                                    <strong>Date:</strong> {{ booking.booking_date|date:"l, M d, Y" }}
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-clock me-2 text-primary"></i>
+                                    <strong>Time:</strong> {{ booking.booking_time|time:"g:i A" }}
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    <strong>Visitors:</strong> {{ booking.number_of_visitors }}
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-dollar-sign me-2 text-primary"></i>
+                                    <strong>Total Amount:</strong> ${{ booking.total_amount }}
+                                </div>
+                                {% if booking.special_requirements %}
+                                <div class="mt-3">
+                                    <strong>Special Requirements:</strong>
+                                    <p class="text-muted mb-0">{{ booking.special_requirements }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attraction Details -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Attraction Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Category:</strong> 
+                            <span class="badge bg-secondary">{{ booking.attraction.get_category_display }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Operating Hours:</strong><br>
+                            {{ booking.attraction.opening_time|time:"g:i A" }} - {{ booking.attraction.closing_time|time:"g:i A" }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Price per Person:</strong> ${{ booking.attraction.price_per_person }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Maximum Capacity:</strong> {{ booking.attraction.max_capacity_per_slot }} visitors per slot
+                        </div>
+                        {% if booking.attraction.image %}
+                        <img src="{{ booking.attraction.image.url }}" class="img-fluid rounded" alt="{{ booking.attraction.name }}" style="max-height: 150px;">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-qrcode me-2"></i>Your QR Code
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                {% if qr_code %}
+                    {% if qr_code.qr_code_image %}
+                    <div class="qr-code-container mb-3">
+                        <img src="{{ qr_code.qr_code_image.url }}" alt="QR Code" class="qr-code-image img-fluid">
+                    </div>
+                    {% else %}
+                    <div class="qr-code-container mb-3">
+                        <i class="fas fa-qrcode fa-5x text-muted"></i>
+                        <p class="text-muted mt-2">QR Code generating...</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- QR Code Status -->
+                    <div class="mb-3">
+                        {% if qr_code.is_valid %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>Valid
+                        </span>
+                        {% elif qr_code.is_expired %}
+                        <span class="badge bg-danger fs-6">
+                            <i class="fas fa-times-circle me-1"></i>Expired
+                        </span>
+                        {% elif qr_code.is_used %}
+                        <span class="badge bg-warning fs-6">
+                            <i class="fas fa-check me-1"></i>Used
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- QR Code Info -->
+                    <div class="text-start mb-3">
+                        <small class="text-muted">
+                            <strong>Created:</strong> {{ qr_code.created_at|date:"M d, Y g:i A" }}<br>
+                            <strong>Expires:</strong> {{ qr_code.expires_at|date:"M d, Y g:i A" }}<br>
+                            {% if qr_code.is_used %}
+                            <strong>Used:</strong> {{ qr_code.used_at|date:"M d, Y g:i A" }}<br>
+                            {% endif %}
+                        </small>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        {% if qr_code.qr_code_image %}
+                        <a href="{% url 'download_qr_code' booking.pk %}" class="btn btn-primary">
+                            <i class="fas fa-download me-2"></i>Download QR Code
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-secondary" onclick="printQRCode()">
+                            <i class="fas fa-print me-2"></i>Print QR Code
+                        </button>
+                        
+                        <button class="btn btn-outline-info" onclick="shareQRCode()">
+                            <i class="fas fa-share me-2"></i>Share
+                        </button>
+                    </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h6>QR Code Not Available</h6>
+                    <p class="text-muted">QR code will be generated once booking is confirmed.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>Important Notes
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Present this QR code at the entrance</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Arrive 15 minutes before your scheduled time</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>QR code is valid only for the booked date and time</small>
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Keep your booking ID for reference</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printQRCode() {
+    const qrImage = document.querySelector('.qr-code-image');
+    if (qrImage) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>QR Code - {{ booking.attraction.name }}</title>
+                    <style>
+                        body { text-align: center; font-family: Arial, sans-serif; }
+                        img { max-width: 300px; }
+                        .info { margin: 20px 0; }
+                    </style>
+                </head>
+                <body>
+                    <h2>{{ booking.attraction.name }}</h2>
+                    <div class="info">
+                        <p><strong>Date:</strong> {{ booking.booking_date|date:"M d, Y" }}</p>
+                        <p><strong>Time:</strong> {{ booking.booking_time|time:"g:i A" }}</p>
+                        <p><strong>Visitors:</strong> {{ booking.number_of_visitors }}</p>
+                        <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+                    </div>
+                    <img src="${qrImage.src}" alt="QR Code">
+                    <p><small>Present this QR code at the entrance</small></p>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+}
+
+function shareQRCode() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Booking QR Code',
+            text: 'Here is my booking QR code for {{ booking.attraction.name }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy URL to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Booking URL copied to clipboard!');
+        });
+    }
+}
+</script>
+{% endblock %}
