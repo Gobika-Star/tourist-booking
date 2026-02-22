@@ -1,0 +1,621 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Tourist Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .payment-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .booking-summary {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        .btn-pay {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            color: white;
+            width: 100%;
+        }
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40,167,69,0.3);
+            color: white;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .payment-method {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-method:hover, .payment-method.active {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        .qr-payment-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+        }
+        .payment-qr-display {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            border: 2px solid #28a745;
+            margin: 1rem 0;
+        }
+        .qr-code-container {
+            margin-bottom: 1rem;
+        }
+        .payment-amount-display {
+            border-top: 1px solid #dee2e6;
+            padding-top: 1rem;
+        }
+        .payment-options {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .payment-option-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .payment-option-card:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+        .payment-option-card.active {
+            background: #e7f3ff;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="payment-card">
+            <div class="text-center mb-4">
+                <h2>
+                    <i class="fas fa-credit-card text-success me-2"></i>
+                    Payment Details
+                </h2>
+                <p class="text-muted">Complete your booking payment</p>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <h5 class="mb-3">
+                    <i class="fas fa-receipt me-2"></i>Booking Summary
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ booking_data.name }}</p>
+                        <p><strong>Email:</strong> {{ booking_data.email }}</p>
+                        <p><strong>Phone:</strong> {{ booking_data.phone }}</p>
+                        <p><strong>Attraction:</strong> {{ booking_data.attraction }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> {{ booking_data.date }}</p>
+                        <p><strong>Time:</strong> {{ booking_data.time }}</p>
+                        <p><strong>Visitors:</strong> {{ booking_data.visitors }}</p>
+                        <p><strong>Travel Days:</strong> {{ booking_data.travel_days }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h4 class="text-success">
+                        {% if booking_data.currency == 'INR' %}
+                            <i class="fas fa-rupee-sign me-2"></i>
+                        {% else %}
+                            <i class="fas fa-dollar-sign me-2"></i>
+                        {% endif %}
+                        Total Amount: {{ booking_data.currency_symbol }}{{ booking_data.amount }}
+                    </h4>
+                    <small class="text-muted">{{ booking_data.currency }} - {{ booking_data.travel_days }} day(s) for {{ booking_data.visitors }} person(s)</small>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <h5 class="mb-3">
+                    <i class="fas fa-payment me-2"></i>Payment Method
+                </h5>
+                
+                <div class="payment-methods">
+                    <div class="payment-method active" onclick="selectPayment('card')">
+                        <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+                        <div>Credit Card</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment('qr')">
+                        <i class="fas fa-qrcode fa-2x text-success mb-2"></i>
+                        <div>Scan to Pay</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment('paypal')">
+                        <i class="fab fa-paypal fa-2x text-info mb-2"></i>
+                        <div>PayPal</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment('apple')">
+                        <i class="fab fa-apple-pay fa-2x text-dark mb-2"></i>
+                        <div>Apple Pay</div>
+                    </div>
+                </div>
+
+                <div id="card-details">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-credit-card me-2"></i>Card Number
+                            </label>
+                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Expiry Date
+                            </label>
+                            <input type="text" class="form-control" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-lock me-2"></i>CVV
+                            </label>
+                            <input type="text" class="form-control" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-user me-2"></i>Cardholder Name
+                        </label>
+                        <input type="text" class="form-control" placeholder="John Doe">
+                    </div>
+                </div>
+
+                <!-- QR Payment Display -->
+                <div id="qr-payment" style="display: none;">
+                    <div class="qr-payment-area">
+                        <div class="text-center mb-4">
+                            <h5 class="text-success">
+                                <i class="fas fa-qrcode me-2"></i>Scan QR Code to Pay
+                            </h5>
+                            <p class="text-muted">Use your phone camera or payment app to scan</p>
+                        </div>
+
+                        <!-- Payment QR Code Display -->
+                        <div class="payment-qr-display">
+                            <div class="qr-code-container">
+                                <div id="qr-container" style="text-align: center;">
+                                    <img id="payment-qr-code" width="250" height="250" style="border: 2px solid #28a745; border-radius: 10px; display: none;" alt="Payment QR Code">
+                                    <canvas id="payment-qr-canvas" width="250" height="250" style="border: 2px solid #28a745; border-radius: 10px; display: none;"></canvas>
+                                    <div id="qr-loading" style="width: 250px; height: 250px; border: 2px solid #28a745; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                                        <div class="text-center">
+                                            <div class="spinner-border text-success" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <div class="mt-2">Generating QR Code...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="payment-amount-display">
+                                <h4 class="text-success mb-2">
+                                    {{ booking_data.currency_symbol }}{{ booking_data.amount }}
+                                </h4>
+                                <p class="text-muted mb-0">{{ booking_data.attraction }}</p>
+                                <small class="text-muted">{{ booking_data.visitors }} person(s) × {{ booking_data.travel_days }} day(s)</small>
+                            </div>
+                        </div>
+
+                        <!-- Payment Options -->
+                        <div class="payment-options mt-4">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="payment-option-card" onclick="generatePaymentQR('upi')">
+                                        <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+                                        <small>UPI</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="payment-option-card" onclick="generatePaymentQR('paypal')">
+                                        <i class="fab fa-paypal fa-2x text-info mb-2"></i>
+                                        <small>PayPal</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="payment-option-card" onclick="generatePaymentQR('crypto')">
+                                        <i class="fab fa-bitcoin fa-2x text-warning mb-2"></i>
+                                        <small>Crypto</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="payment-option-card" onclick="generatePaymentQR('wallet')">
+                                        <i class="fas fa-wallet fa-2x text-success mb-2"></i>
+                                        <small>Wallet</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-success" onclick="confirmPayment()">
+                                <i class="fas fa-check me-2"></i>I've Made the Payment
+                            </button>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <h6><i class="fas fa-info-circle me-2"></i>How to Pay</h6>
+                            <ol class="mb-0">
+                                <li>Select a payment method above</li>
+                                <li>Open your payment app on your phone</li>
+                                <li>Scan the QR code with your phone camera</li>
+                                <li>Complete the payment in your app</li>
+                                <li>Click "I've Made the Payment" button</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        I agree to the <a href="#" class="text-primary">Terms and Conditions</a>
+                    </label>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-pay">
+                        <i class="fas fa-lock me-2"></i>Pay ${{ booking_data.amount }} Securely
+                    </button>
+                    
+                    <a href="/booking/" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Booking
+                    </a>
+                </div>
+            </form>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Your payment is secured with 256-bit SSL encryption
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QR Code Library - Multiple CDN Sources -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script>
+        // Alternative QR Code implementation if main library fails
+        window.qrCodeFallback = function(text, canvas) {
+            try {
+                // Use QR Code Generator library
+                var qr = qrcode(4, 'M');
+                qr.addData(text);
+                qr.make();
+
+                var ctx = canvas.getContext('2d');
+                var modules = qr.modules;
+                var moduleCount = qr.getModuleCount();
+                var cellSize = canvas.width / moduleCount;
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#000000';
+                for (var row = 0; row < moduleCount; row++) {
+                    for (var col = 0; col < moduleCount; col++) {
+                        if (modules[row][col]) {
+                            ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                        }
+                    }
+                }
+                return true;
+            } catch (e) {
+                console.error('QR Code fallback failed:', e);
+                return false;
+            }
+        };
+    </script>
+    <!-- Primary QR Code Library -->
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        let currentPaymentMethod = 'upi';
+
+        function selectPayment(method) {
+            // Remove active class from all methods
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Add active class to selected method
+            event.target.closest('.payment-method').classList.add('active');
+
+            // Show/hide payment sections
+            const cardDetails = document.getElementById('card-details');
+            const qrPayment = document.getElementById('qr-payment');
+
+            // Hide all payment sections first
+            cardDetails.style.display = 'none';
+            qrPayment.style.display = 'none';
+
+            // Show selected payment method
+            if (method === 'card') {
+                cardDetails.style.display = 'block';
+            } else if (method === 'qr') {
+                qrPayment.style.display = 'block';
+                // Generate default UPI QR code
+                setTimeout(() => generatePaymentQR('upi'), 100);
+            }
+            // For other methods (paypal, apple), just hide card details
+        }
+
+        function generatePaymentQR(paymentType) {
+            currentPaymentMethod = paymentType;
+
+            // Remove active class from all payment options
+            document.querySelectorAll('.payment-option-card').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Add active class to selected option (if event exists)
+            if (typeof event !== 'undefined' && event.target) {
+                event.target.closest('.payment-option-card').classList.add('active');
+            } else {
+                // If no event, find and activate the correct payment option
+                const paymentCards = document.querySelectorAll('.payment-option-card');
+                paymentCards.forEach((card, index) => {
+                    if ((paymentType === 'upi' && index === 0) ||
+                        (paymentType === 'paypal' && index === 1) ||
+                        (paymentType === 'crypto' && index === 2) ||
+                        (paymentType === 'wallet' && index === 3)) {
+                        card.classList.add('active');
+                    }
+                });
+            }
+
+            // Show loading state
+            document.getElementById('payment-qr-code').style.display = 'none';
+            document.getElementById('payment-qr-canvas').style.display = 'none';
+            document.getElementById('qr-loading').style.display = 'flex';
+
+            const canvas = document.getElementById('payment-qr-canvas');
+            const amount = '{{ booking_data.amount }}';
+            const currency = '{{ booking_data.currency }}';
+
+            let qrData = '';
+
+            switch(paymentType) {
+                case 'upi':
+                    qrData = `upi://pay?pa=touristbooking@paytm&pn=Tourist%20Booking&am=${amount}&cu=${currency}&tn=Tourist%20Booking%20Payment`;
+                    break;
+                case 'paypal':
+                    qrData = `https://paypal.me/touristbooking/${amount}`;
+                    break;
+                case 'crypto':
+                    qrData = `bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa?amount=${amount/50000}&label=Tourist%20Booking`;
+                    break;
+                case 'wallet':
+                    qrData = `WALLET_PAY:touristbooking:${amount}:${currency}:Tourist_Booking_Payment`;
+                    break;
+                default:
+                    qrData = `PAY:${amount}:${currency}:Tourist_Booking`;
+            }
+
+            // Try multiple QR generation methods
+            generateQRWithFallbacks(qrData, paymentType);
+        }
+
+        function generateQRWithFallbacks(qrData, paymentType) {
+            // Method 1: Try online QR API (most reliable)
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+
+            const qrImage = document.getElementById('payment-qr-code');
+            qrImage.onload = function() {
+                document.getElementById('qr-loading').style.display = 'none';
+                document.getElementById('payment-qr-canvas').style.display = 'none';
+                qrImage.style.display = 'block';
+                console.log('QR code generated via API for:', paymentType);
+            };
+
+            qrImage.onerror = function() {
+                console.log('QR API failed, trying JavaScript libraries...');
+                tryJavaScriptQR(qrData, paymentType);
+            };
+
+            qrImage.src = qrApiUrl;
+        }
+
+        function tryJavaScriptQR(qrData, paymentType) {
+            const canvas = document.getElementById('payment-qr-canvas');
+            let qrGenerated = false;
+
+            // Try primary QR Code library
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    QRCode.toCanvas(canvas, qrData, {
+                        width: 250,
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        }
+                    }, function (error) {
+                        if (error) {
+                            console.error('Primary QR Code generation error:', error);
+                            tryFallbackQR(qrData, canvas, paymentType);
+                        } else {
+                            document.getElementById('qr-loading').style.display = 'none';
+                            document.getElementById('payment-qr-code').style.display = 'none';
+                            canvas.style.display = 'block';
+                            console.log('Primary QR code generated for:', paymentType);
+                        }
+                    });
+                    qrGenerated = true;
+                } catch (e) {
+                    console.error('Primary QR library error:', e);
+                }
+            }
+
+            // If primary failed, try fallback immediately
+            if (!qrGenerated) {
+                tryFallbackQR(qrData, canvas, paymentType);
+            }
+        }
+
+        function tryFallbackQR(qrData, canvas, paymentType) {
+            console.log('Trying fallback QR generation...');
+            if (window.qrCodeFallback && window.qrCodeFallback(qrData, canvas)) {
+                document.getElementById('qr-loading').style.display = 'none';
+                document.getElementById('payment-qr-code').style.display = 'none';
+                canvas.style.display = 'block';
+                console.log('Fallback QR code generated for:', paymentType);
+            } else {
+                showQRError('QR Code Unavailable');
+            }
+        }
+
+        function showQRError(message) {
+            document.getElementById('qr-loading').style.display = 'none';
+            document.getElementById('payment-qr-code').style.display = 'none';
+            document.getElementById('payment-qr-canvas').style.display = 'none';
+
+            // Create error display
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'qr-error';
+            errorDiv.style.cssText = `
+                width: 250px;
+                height: 250px;
+                border: 2px solid #dc3545;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f8f9fa;
+                color: #dc3545;
+                text-align: center;
+                font-weight: bold;
+            `;
+            errorDiv.innerHTML = `
+                <div>
+                    <div style="font-size: 18px; margin-bottom: 10px;">${message}</div>
+                    <div style="font-size: 14px;">Please try refreshing</div>
+                </div>
+            `;
+
+            // Remove existing error if any
+            const existingError = document.getElementById('qr-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Add error to container
+            document.getElementById('qr-container').appendChild(errorDiv);
+        }
+
+        function confirmPayment() {
+            // Simulate payment confirmation
+            const paymentMethod = currentPaymentMethod.toUpperCase();
+
+            // Show loading state
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verifying Payment...';
+            btn.disabled = true;
+
+            // Simulate payment verification
+            setTimeout(() => {
+                alert(`Payment confirmed via ${paymentMethod}! Redirecting to confirmation...`);
+                // Submit the form to complete the booking
+                document.querySelector('form').submit();
+            }, 2000);
+        }
+
+
+
+        // Format card number input
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if QRCode library is loaded
+            console.log('QRCode library available:', typeof QRCode !== 'undefined');
+
+            const cardInput = document.querySelector('input[placeholder="1234 5678 9012 3456"]');
+            if (cardInput) {
+                cardInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\s/g, '');
+                    let formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+                    e.target.value = formattedValue;
+                });
+            }
+
+            // Format expiry date
+            const expiryInput = document.querySelector('input[placeholder="MM/YY"]');
+            if (expiryInput) {
+                expiryInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length >= 2) {
+                        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            // Animation
+            const card = document.querySelector('.payment-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
