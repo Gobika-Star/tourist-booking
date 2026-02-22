@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Profile - Tourist QR Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-user me-2"></i>My Profile
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Profile Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Basic User Information (Read-only) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Account Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" value="{{ user.first_name }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" value="{{ user.last_name }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Editable Profile Information -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">Personal Information</h6>
+                        </div>
+                        <div class="col-12">
+                            {{ form|crispy }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Profile Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-circle me-2"></i>Profile Summary
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                <h5>{{ user.get_full_name|default:user.username }}</h5>
+                <p class="text-muted">{{ user.email }}</p>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Member since {{ user.date_joined|date:"M Y" }}</small>
+                </div>
+
+                <!-- Profile Completion -->
+                <div class="mb-3">
+                    <h6>Profile Completion</h6>
+                    {% if profile.phone_number and profile.date_of_birth and profile.address %}
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 100%">100%</div>
+                        </div>
+                        <small class="text-success">Complete</small>
+                    {% elif profile.phone_number or profile.date_of_birth or profile.address %}
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 60%">60%</div>
+                        </div>
+                        <small class="text-warning">Partially Complete</small>
+                    {% else %}
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" style="width: 30%">30%</div>
+                        </div>
+                        <small class="text-danger">Incomplete</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Statistics -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Account Statistics
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-primary mb-0">{{ user.booking_set.count }}</div>
+                        <small class="text-muted">Total Bookings</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-success mb-0">{{ user.booking_set.filter.count }}</div>
+                        <small class="text-muted">Completed Visits</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-info mb-0">{{ user.qrcode_set.count }}</div>
+                        <small class="text-muted">QR Codes</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-warning mb-0">0</div>
+                        <small class="text-muted">Favorites</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>Security Settings
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'password_reset' %}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </a>
+                    <button class="btn btn-outline-info btn-sm" onclick="downloadData()">
+                        <i class="fas fa-download me-2"></i>Download My Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Notice -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Privacy Notice
+                </h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    Your personal information is securely stored and used only for booking purposes. 
+                    We never share your data with third parties without your consent.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function downloadData() {
+    // This would typically generate a JSON or PDF file with user's data
+    alert('Data download functionality will be implemented to comply with GDPR requirements.');
+    
+    // Example implementation:
+    const userData = {
+        username: '{{ user.username }}',
+        email: '{{ user.email }}',
+        firstName: '{{ user.first_name }}',
+        lastName: '{{ user.last_name }}',
+        dateJoined: '{{ user.date_joined|date:"c" }}',
+        profile: {
+            phone: '{{ profile.phone_number }}',
+            dateOfBirth: '{{ profile.date_of_birth|date:"c" }}',
+            address: '{{ profile.address }}',
+            emergencyContact: '{{ profile.emergency_contact }}'
+        }
+    };
+    
+    // Create and download JSON file
+    const dataStr = JSON.stringify(userData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'my_tourist_booking_data.json';
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const phoneInput = document.querySelector('input[name="phone_number"]');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            // Basic phone number validation
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            if (this.value && !phoneRegex.test(this.value.replace(/[\s\-\(\)]/g, ''))) {
+                this.setCustomValidity('Please enter a valid phone number');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
