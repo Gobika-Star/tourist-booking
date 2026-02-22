@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        canvas {
+            border: 2px solid #007bff;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>QR Code Library Test</h1>
+        
+        <div id="status" class="status info">Testing QR Code library...</div>
+        
+        <h3>Test QR Code:</h3>
+        <canvas id="test-qr" width="200" height="200"></canvas>
+        
+        <div>
+            <button onclick="generateTestQR()">Generate Test QR Code</button>
+            <button onclick="generatePaymentQR()">Generate Payment QR Code</button>
+        </div>
+        
+        <div id="debug-info" style="margin-top: 20px; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 5px;">
+            <h4>Debug Information:</h4>
+            <div id="debug-content"></div>
+        </div>
+    </div>
+
+    <!-- QR Code Library (Local) -->
+    <script src="/static/js/qrcode.min.js"></script>
+    
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function updateDebug(info) {
+            const debugContent = document.getElementById('debug-content');
+            debugContent.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${info}</div>`;
+        }
+
+        function generateTestQR() {
+            updateDebug('Attempting to generate test QR code...');
+            const canvas = document.getElementById('test-qr');
+            
+            if (typeof QRCode === 'undefined') {
+                updateStatus('QRCode library not loaded!', 'error');
+                updateDebug('ERROR: QRCode library is undefined');
+                return;
+            }
+
+            updateDebug('QRCode library is available');
+            
+            QRCode.toCanvas(canvas, 'Hello World Test QR Code', {
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error) {
+                if (error) {
+                    updateStatus('QR Code generation failed!', 'error');
+                    updateDebug('ERROR: ' + error.toString());
+                } else {
+                    updateStatus('Test QR Code generated successfully!', 'success');
+                    updateDebug('SUCCESS: Test QR code generated');
+                }
+            });
+        }
+
+        function generatePaymentQR() {
+            updateDebug('Attempting to generate payment QR code...');
+            const canvas = document.getElementById('test-qr');
+            
+            if (typeof QRCode === 'undefined') {
+                updateStatus('QRCode library not loaded!', 'error');
+                updateDebug('ERROR: QRCode library is undefined');
+                return;
+            }
+
+            const paymentData = 'upi://pay?pa=test@paytm&pn=Tourist%20Booking&am=1000&cu=INR&tn=Test%20Payment';
+            
+            QRCode.toCanvas(canvas, paymentData, {
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error) {
+                if (error) {
+                    updateStatus('Payment QR Code generation failed!', 'error');
+                    updateDebug('ERROR: ' + error.toString());
+                } else {
+                    updateStatus('Payment QR Code generated successfully!', 'success');
+                    updateDebug('SUCCESS: Payment QR code generated');
+                }
+            });
+        }
+
+        // Check library on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebug('Page loaded, checking QR library...');
+            
+            if (typeof QRCode !== 'undefined') {
+                updateStatus('QRCode library loaded successfully!', 'success');
+                updateDebug('QRCode library is available');
+                updateDebug('QRCode version: ' + (QRCode.version || 'unknown'));
+                
+                // Auto-generate test QR code
+                setTimeout(generateTestQR, 500);
+            } else {
+                updateStatus('QRCode library failed to load!', 'error');
+                updateDebug('QRCode library is NOT available');
+            }
+        });
+
+        // Additional debugging
+        window.addEventListener('load', function() {
+            updateDebug('Window fully loaded');
+        });
+
+        // Check for script loading errors
+        window.addEventListener('error', function(e) {
+            updateDebug('Script error: ' + e.message);
+        });
+    </script>
+</body>
+</html>
