@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Tourist QR Booking{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="jumbotron bg-primary text-white p-5 rounded">
+            <div class="container">
+                <h1 class="display-4">Welcome to Tourist QR Booking</h1>
+                <p class="lead">Book your favorite tourist attractions and get instant QR codes for seamless entry!</p>
+                <hr class="my-4">
+                <p>Secure, convenient, and contactless booking experience with advanced QR code technology.</p>
+                <a class="btn btn-light btn-lg" href="{% url 'attractions' %}" role="button">
+                    <i class="fas fa-search me-2"></i>Explore Attractions
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Why Choose Our QR Booking System?</h2>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="fas fa-qrcode fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Instant QR Codes</h5>
+                <p class="card-text">Get your unique QR code immediately after booking. No waiting, no hassle.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Secure & Valid</h5>
+                <p class="card-text">Each QR code is unique, time-limited, and validated in real-time for security.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <i class="fas fa-mobile-alt fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Mobile Friendly</h5>
+                <p class="card-text">Access your bookings and QR codes from any device, anywhere, anytime.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Attractions -->
+{% if featured_attractions %}
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Featured Attractions</h2>
+    </div>
+    {% for attraction in featured_attractions %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if attraction.image %}
+            <img src="{{ attraction.image.url }}" class="card-img-top" alt="{{ attraction.name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                <i class="fas fa-image fa-3x text-muted"></i>
+            </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ attraction.name }}</h5>
+                <p class="card-text">{{ attraction.description|truncatewords:20 }}</p>
+                <div class="mt-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-secondary">{{ attraction.get_category_display }}</span>
+                        <strong class="text-primary">${{ attraction.price_per_person }}</strong>
+                    </div>
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ attraction.location }}
+                    </p>
+                    <a href="{% url 'attraction_detail' attraction.pk %}" class="btn btn-primary">
+                        <i class="fas fa-info-circle me-1"></i>View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center">
+    <a href="{% url 'attractions' %}" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-list me-2"></i>View All Attractions
+    </a>
+</div>
+{% endif %}
+
+<!-- How It Works Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">How It Works</h2>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+            <span class="h4 mb-0">1</span>
+        </div>
+        <h5>Browse & Select</h5>
+        <p>Choose from our wide range of tourist attractions and activities.</p>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+            <span class="h4 mb-0">2</span>
+        </div>
+        <h5>Book & Pay</h5>
+        <p>Select your preferred date, time, and number of visitors, then complete your booking.</p>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+            <span class="h4 mb-0">3</span>
+        </div>
+        <h5>Get QR Code</h5>
+        <p>Receive your unique QR code instantly via email or download from your dashboard.</p>
+    </div>
+    <div class="col-md-3 text-center mb-3">
+        <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+            <span class="h4 mb-0">4</span>
+        </div>
+        <h5>Scan & Enter</h5>
+        <p>Present your QR code at the entrance for quick and contactless entry.</p>
+    </div>
+</div>
+{% endblock %}
