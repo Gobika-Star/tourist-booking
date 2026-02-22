@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Scan QR Code - Tourist QR Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-qrcode me-2"></i>QR Code Scanner
+        </h1>
+        <p class="lead text-muted">Scan visitor QR codes for entry validation</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-camera me-2"></i>Scan QR Code
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Camera Scanner (placeholder for future implementation) -->
+                <div class="text-center mb-4">
+                    <div class="scanner-placeholder bg-light border rounded p-5">
+                        <i class="fas fa-camera fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">Camera Scanner</h5>
+                        <p class="text-muted">Camera-based QR scanning will be implemented here</p>
+                        <button class="btn btn-outline-primary" onclick="startCamera()">
+                            <i class="fas fa-video me-2"></i>Start Camera
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center mb-3">
+                    <span class="badge bg-secondary">OR</span>
+                </div>
+
+                <!-- Manual Input Form -->
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check-circle me-2"></i>Validate QR Code
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Instructions -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>How to Scan
+                </h6>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Use the camera scanner to automatically detect QR codes</li>
+                    <li class="mb-2">Or manually paste the QR code data in the text area</li>
+                    <li class="mb-2">Click "Validate QR Code" to check validity</li>
+                    <li class="mb-0">Grant or deny entry based on the result</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Scan Results Legend -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-traffic-light me-2"></i>Result Codes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <span class="badge bg-success me-2">VALID</span>
+                    <small>Grant entry - QR code is valid</small>
+                </div>
+                <div class="mb-2">
+                    <span class="badge bg-danger me-2">EXPIRED</span>
+                    <small>Deny entry - QR code has expired</small>
+                </div>
+                <div class="mb-2">
+                    <span class="badge bg-warning me-2">USED</span>
+                    <small>Deny entry - QR code already used</small>
+                </div>
+                <div class="mb-0">
+                    <span class="badge bg-secondary me-2">INVALID</span>
+                    <small>Deny entry - QR code is invalid</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Today's Stats
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-success mb-0">0</div>
+                        <small class="text-muted">Valid Scans</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-danger mb-0">0</div>
+                        <small class="text-muted">Invalid Scans</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Scans -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Scans
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-4">
+                    <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">No recent scans</h6>
+                    <p class="text-muted">Scan history will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.scanner-placeholder {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.scan-result {
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.scan-result.valid {
+    background-color: #d4edda;
+    border: 2px solid #28a745;
+    color: #155724;
+}
+
+.scan-result.invalid {
+    background-color: #f8d7da;
+    border: 2px solid #dc3545;
+    color: #721c24;
+}
+
+.scan-result.expired {
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+}
+
+.scan-result.used {
+    background-color: #e2e3e5;
+    border: 2px solid #6c757d;
+    color: #383d41;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function startCamera() {
+    alert('Camera functionality will be implemented with WebRTC API or a QR scanning library like QuaggaJS or ZXing.');
+    // Future implementation:
+    // - Request camera permissions
+    // - Initialize video stream
+    // - Use QR code detection library
+    // - Auto-populate form when QR code is detected
+}
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.querySelector('textarea[name="qr_data"]');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
+});
+
+// Sample QR data for testing
+function insertSampleQR() {
+    const textarea = document.querySelector('textarea[name="qr_data"]');
+    if (textarea) {
+        const sampleData = {
+            "booking_id": "12345678-1234-1234-1234-123456789012",
+            "user_id": 1,
+            "attraction_id": 1,
+            "booking_date": "2024-12-25",
+            "booking_time": "10:00:00",
+            "visitors": 2,
+            "expires_at": "2024-12-25T12:00:00Z"
+        };
+        textarea.value = JSON.stringify(sampleData, null, 2);
+    }
+}
+</script>
+{% endblock %}
