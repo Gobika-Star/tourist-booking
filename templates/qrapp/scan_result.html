@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}Scan Result - Tourist QR Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'scan_qr_code' %}">QR Scanner</a></li>
+                <li class="breadcrumb-item active">Scan Result</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Scan Result Alert -->
+<div class="row">
+    <div class="col-12">
+        {% if scan_result == 'valid' %}
+        <div class="alert alert-success alert-lg text-center">
+            <i class="fas fa-check-circle fa-3x mb-3"></i>
+            <h3 class="alert-heading">✅ ENTRY GRANTED</h3>
+            <p class="mb-0">{{ message }}</p>
+        </div>
+        {% elif scan_result == 'expired' %}
+        <div class="alert alert-warning alert-lg text-center">
+            <i class="fas fa-clock fa-3x mb-3"></i>
+            <h3 class="alert-heading">⏰ QR CODE EXPIRED</h3>
+            <p class="mb-0">{{ message }}</p>
+        </div>
+        {% elif scan_result == 'used' %}
+        <div class="alert alert-info alert-lg text-center">
+            <i class="fas fa-check fa-3x mb-3"></i>
+            <h3 class="alert-heading">🔄 ALREADY USED</h3>
+            <p class="mb-0">{{ message }}</p>
+        </div>
+        {% else %}
+        <div class="alert alert-danger alert-lg text-center">
+            <i class="fas fa-times-circle fa-3x mb-3"></i>
+            <h3 class="alert-heading">❌ ENTRY DENIED</h3>
+            <p class="mb-0">{{ message }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Booking Details -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>Booking Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-primary">{{ booking.attraction.name }}</h5>
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ booking.attraction.location }}
+                        </p>
+                        
+                        <div class="mb-2">
+                            <strong>Visitor:</strong> {{ booking.user.get_full_name|default:booking.user.username }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Email:</strong> {{ booking.user.email }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Booking ID:</strong> 
+                            <code>{{ booking.booking_id }}</code>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Status:</strong> 
+                            <span class="badge status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Visit Details</h6>
+                                <div class="mb-2">
+                                    <i class="fas fa-calendar me-2 text-primary"></i>
+                                    <strong>Date:</strong> {{ booking.booking_date|date:"l, M d, Y" }}
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-clock me-2 text-primary"></i>
+                                    <strong>Time:</strong> {{ booking.booking_time|time:"g:i A" }}
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    <strong>Visitors:</strong> {{ booking.number_of_visitors }}
+                                </div>
+                                <div class="mb-0">
+                                    <i class="fas fa-dollar-sign me-2 text-primary"></i>
+                                    <strong>Amount:</strong> ${{ booking.total_amount }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Status -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-qrcode me-2"></i>QR Code Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    {% if scan_result == 'valid' %}
+                    <i class="fas fa-check-circle fa-4x text-success"></i>
+                    <h6 class="mt-2 text-success">VALID</h6>
+                    {% elif scan_result == 'expired' %}
+                    <i class="fas fa-clock fa-4x text-warning"></i>
+                    <h6 class="mt-2 text-warning">EXPIRED</h6>
+                    {% elif scan_result == 'used' %}
+                    <i class="fas fa-check fa-4x text-info"></i>
+                    <h6 class="mt-2 text-info">USED</h6>
+                    {% else %}
+                    <i class="fas fa-times-circle fa-4x text-danger"></i>
+                    <h6 class="mt-2 text-danger">INVALID</h6>
+                    {% endif %}
+                </div>
+                
+                <div class="text-start">
+                    <small class="text-muted">
+                        <strong>Created:</strong> {{ qr_code.created_at|date:"M d, Y g:i A" }}<br>
+                        <strong>Expires:</strong> {{ qr_code.expires_at|date:"M d, Y g:i A" }}<br>
+                        {% if qr_code.is_used %}
+                        <strong>Used:</strong> {{ qr_code.used_at|date:"M d, Y g:i A" }}<br>
+                        {% endif %}
+                        <strong>Scanned:</strong> {{ qr_code.scanlog_set.last.scan_timestamp|date:"M d, Y g:i A"|default:"Just now" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'scan_qr_code' %}" class="btn btn-primary">
+                        <i class="fas fa-qrcode me-2"></i>Scan Another QR Code
+                    </a>
+                    
+                    <button class="btn btn-outline-secondary" onclick="printResult()">
+                        <i class="fas fa-print me-2"></i>Print Result
+                    </button>
+                    
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin:qrapp_scanlog_changelist' %}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i>View All Scans
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Information -->
+{% if booking.special_requirements %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Special Requirements
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ booking.special_requirements }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Instructions for Staff -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>Staff Instructions
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if scan_result == 'valid' %}
+                <div class="alert alert-success">
+                    <h6 class="alert-heading">✅ Allow Entry</h6>
+                    <ul class="mb-0">
+                        <li>Verify the number of visitors matches the booking ({{ booking.number_of_visitors }})</li>
+                        <li>Check visitor ID if required by attraction policy</li>
+                        <li>Provide any necessary safety instructions</li>
+                        <li>Direct visitors to the appropriate entrance/area</li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">❌ Deny Entry</h6>
+                    <ul class="mb-0">
+                        <li>Politely explain that the QR code is {{ scan_result }}</li>
+                        <li>Direct visitor to customer service for assistance</li>
+                        <li>Suggest rebooking if the QR code has expired</li>
+                        <li>Report any suspicious activity to security</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.alert-lg {
+    padding: 2rem;
+    font-size: 1.1rem;
+}
+
+.alert-lg .fa-3x {
+    font-size: 4rem;
+}
+
+.scan-timestamp {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printResult() {
+    const printContent = `
+        <html>
+            <head>
+                <title>Scan Result - {{ booking.attraction.name }}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .result { padding: 20px; border: 2px solid; border-radius: 10px; text-align: center; margin: 20px 0; }
+                    .valid { border-color: #28a745; background-color: #d4edda; }
+                    .invalid { border-color: #dc3545; background-color: #f8d7da; }
+                    .expired { border-color: #ffc107; background-color: #fff3cd; }
+                    .used { border-color: #6c757d; background-color: #e2e3e5; }
+                    .details { margin: 20px 0; }
+                    .details table { width: 100%; border-collapse: collapse; }
+                    .details td { padding: 8px; border-bottom: 1px solid #ddd; }
+                    .details td:first-child { font-weight: bold; width: 30%; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>QR Code Scan Result</h2>
+                    <p>{{ booking.attraction.name }}</p>
+                </div>
+                
+                <div class="result {{ scan_result }}">
+                    <h3>
+                        {% if scan_result == 'valid' %}✅ ENTRY GRANTED{% elif scan_result == 'expired' %}⏰ EXPIRED{% elif scan_result == 'used' %}🔄 ALREADY USED{% else %}❌ ENTRY DENIED{% endif %}
+                    </h3>
+                    <p>{{ message }}</p>
+                </div>
+                
+                <div class="details">
+                    <table>
+                        <tr><td>Visitor:</td><td>{{ booking.user.get_full_name|default:booking.user.username }}</td></tr>
+                        <tr><td>Booking ID:</td><td>{{ booking.booking_id }}</td></tr>
+                        <tr><td>Date:</td><td>{{ booking.booking_date|date:"M d, Y" }}</td></tr>
+                        <tr><td>Time:</td><td>{{ booking.booking_time|time:"g:i A" }}</td></tr>
+                        <tr><td>Visitors:</td><td>{{ booking.number_of_visitors }}</td></tr>
+                        <tr><td>Scan Time:</td><td>${new Date().toLocaleString()}</td></tr>
+                    </table>
+                </div>
+            </body>
+        </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Auto-refresh page after 30 seconds for security
+setTimeout(function() {
+    if (confirm('Session timeout. Return to scanner?')) {
+        window.location.href = '{% url "scan_qr_code" %}';
+    }
+}, 30000);
+</script>
+{% endblock %}
